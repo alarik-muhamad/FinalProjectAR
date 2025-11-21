@@ -28,9 +28,6 @@
     </a-scene>
 
     <script>
-      // ================================
-      //  LIST YOUR PC PARTS HERE
-      // ================================
       const pcParts = [
         { id: "case", label: "CASE", pos: "0 0 0", rot: "0 0 0", scale: "3 3 3"  },
         { id: "cpu", label: "CPU", pos: "0 0 0", rot: "0 -90 0", scale: "0.1 0.1 0.1" },
@@ -49,9 +46,8 @@
       const assetContainer = document.getElementById("assetContainer");
       const markerContainer = document.getElementById("markerContainer");
 
-      // ----------------------------------
-      // 1. Generate assets + markers
-      // ----------------------------------
+      // Generate assets + markers
+
       pcParts.forEach(part => {
         const {
           id,
@@ -98,10 +94,8 @@
           `
         );
       });
-
-      // ----------------------------------
-      // 3. Sound triggers
-      // ----------------------------------
+      
+      // Sound triggers
       pcParts.forEach((part) => {
         const marker = document.getElementById(`marker-${part.id}`);
         const sound = document.getElementById(`sound-${part.id}`);
