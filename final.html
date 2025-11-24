@@ -18,27 +18,22 @@
 
   <body>
     <a-scene embedded arjs="sourceType: webcam;">
-      <!-- Container for auto-generated assets -->
       <a-assets id="assetContainer"></a-assets>
-
-      <!-- Container for auto-generated markers -->
       <a-entity id="markerContainer"></a-entity>
-
       <a-entity camera></a-entity>
     </a-scene>
 
     <script>
-      // ================================
-      //  LIST YOUR PC PARTS HERE
-      // ================================
+     
+      //  LIST PC PARTS 
       const pcParts = [
-        { id: "case", label: "CASE", pos: "0 0 0", rot: "0 0 0", scale: "3 3 3"  },
+        { id: "case", label: "CASE", pos: "-1 -3 0", rot: "-90 180 180", scale: "0.5 0.5 0.5"  },
         { id: "cpu", label: "CPU", pos: "0 0 0", rot: "0 -90 0", scale: "0.1 0.1 0.1" },
         { id: "fan", label: "FAN", pos: "0 0 0", rot: "0 0 0", scale: "20 20 20" },
         { id: "hdd", label: "HDD", pos: "0 0 0", rot: "180 180 0", scale: "0.5 0.5 0.5" },
         { id: "keyboard", label: "KEYBOARD", pos: "0 0 0", rot: "0 -90 0", scale: "0.1 0.1 0.1" },
-        { id: "monitor", label: "MONITOR", pos: "0 0 0", rot: "0 0 0", scale: "1 1 1" },
-        { id: "motherboard", label: "MOTHERBOARD", pos: "0 180 0", rot: "0 90 0", scale: "10 10 10" },
+        { id: "monitor", label: "MONITOR", pos: "0 1 0", rot: "-90 0 0", scale: "6 6 6" },
+        { id: "motherboard", label: "MOTHERBOARD", pos: "0 1 0", rot: "0 90 0", scale: "2 2 2" },
         { id: "mouse", label: "MOUSE", pos: "0 0 0", rot: "0 -90 0", scale: "1 1 1"},
         { id: "psu", label: "PSU", pos: "0 0 0", rot: "90 0 180", scale: "0.1 0.1 0.1" },
         { id: "ram", label: "RAM", pos: "0 0 0", rot: "0 180 180", scale: "20 20 20" },
@@ -49,9 +44,18 @@
       const assetContainer = document.getElementById("assetContainer");
       const markerContainer = document.getElementById("markerContainer");
 
-      // ----------------------------------
+      
+      // AUTO-SIZING BACKGROUND 
+      function updateBackgroundWidth(textEl, bgEl) {
+        const value = textEl.getAttribute("value");
+        const charWidth = 0.18; // adjust this if needed
+        const padding = 0.4;
+
+        const textWidth = value.length * charWidth;
+        bgEl.setAttribute("width", textWidth + padding);
+      }
       // 1. Generate assets + markers
-      // ----------------------------------
+    
       pcParts.forEach(part => {
         const {
           id,
@@ -70,7 +74,7 @@
           `
         );
 
-        // Add markers
+        // Add marker
         markerContainer.insertAdjacentHTML(
           "beforeend",
           `
@@ -83,14 +87,28 @@
                 scale="${scale}">
               </a-entity>
 
-              <a-text
-                value="${label}"
-                position="0 0 2"
-                align="center"
-                color="black"
-                rotation="-90 0 0"
-                scale="2 2 2">
-              </a-text>
+              <!-- Label + background -->
+              <a-entity id="label-${id}" position="0 0 2" rotation="-90 0 0">
+
+                <a-plane 
+                  id="bg-${id}" 
+                  color="white" 
+                  opacity="0.7"
+                  height="0.5"
+                  width="4"
+                  position="0 0 0.01"
+                </a-plane>
+
+                <a-text 
+                  id="text-${id}"
+                  value="${label}"
+                  align="center"
+                  color="black"
+                  position="0 0 0.05"
+                  scale="2 2 2">
+                </a-text>
+
+              </a-entity>
 
               <a-sound id="sound-${id}" src="#audio-${id}" autoplay="false" volume="2"></a-sound>
 
@@ -99,25 +117,33 @@
         );
       });
 
-      // ----------------------------------
-      // 3. Sound triggers
-      // ----------------------------------
+  
+      // 2. Sound + background resizing triggers
       pcParts.forEach((part) => {
         const marker = document.getElementById(`marker-${part.id}`);
-        const sound = document.getElementById(`sound-${part.id}`);
 
         marker.addEventListener("markerFound", () => {
+          const sound = document.getElementById(`sound-${part.id}`);
+          const textEl = document.getElementById(`text-${part.id}`);
+          const bgEl = document.getElementById(`bg-${part.id}`);
+
+          // play sound
           if (sound.components.sound) {
             sound.components.sound.playSound();
           }
+
+          // auto resize label background
+          updateBackgroundWidth(textEl, bgEl);
         });
 
         marker.addEventListener("markerLost", () => {
+          const sound = document.getElementById(`sound-${part.id}`);
           if (sound.components.sound) {
             sound.components.sound.stopSound();
           }
         });
       });
+
     </script>
 
   </body>
