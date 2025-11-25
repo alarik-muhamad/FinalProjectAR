@@ -9,14 +9,80 @@
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
 
     <style>
-      body {
-        margin: 0;
-        overflow: hidden;
-      }
-    </style>
+  body {
+    margin: 0;
+    overflow: hidden;
+    font-family: "Segoe UI", Arial, sans-serif;
+  }
+.ui-overlay {
+  position: fixed;
+  top: 20px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.ui-box {
+  background: rgba(0, 0, 0, 0.45);
+  padding: 15px 30px;
+  border-radius: 12px;
+  backdrop-filter: blur(6px);
+  color: #fff;
+  font-size: 1.6em;
+  letter-spacing: 1.2px;
+  font-weight: 600;
+  box-shadow: 0 0 15px rgba(0, 200, 255, 0.35);
+}
+
+.pulse {
+  animation: pulseText 2s infinite;
+}
+
+@keyframes pulseText {
+  0% { opacity: 0.4; }
+  50% { opacity: 1; }
+  100% { opacity: 0.4; }
+}
+
+.back-btn {
+  position: fixed;
+  bottom: 25px;
+  left: 25px;
+  padding: 15px 35px;
+  background: rgba(0, 0, 0, 0.55);
+  color: white;
+  border-radius: 12px;
+  font-size: 1.3em;      /* Bigger */
+  font-weight: 600;
+  backdrop-filter: blur(6px);
+  text-decoration: none;
+  box-shadow: 0 0 15px rgba(0, 255, 128, 0.4);
+  z-index: 20;
+  transition: 0.25s ease;
+}
+
+.back-btn:hover {
+  background: rgba(0, 0, 0, 0.75);
+  transform: scale(1.07);
+}
+
+
+</style>
+
   </head>
 
+  <a href="home.html" class="back-btn">Back</a>
   <body>
+
+<div class="ui-overlay">
+  <div class="ui-box">
+    <span class="pulse">Scan your marker</span>
+  </div>
+</div>
+
+
     <a-scene embedded arjs="sourceType: webcam;">
       <a-assets id="assetContainer"></a-assets>
       <a-entity id="markerContainer"></a-entity>
@@ -24,7 +90,6 @@
     </a-scene>
 
     <script>
-     
       //  LIST PC PARTS 
       const pcParts = [
         { id: "case", label: "CASE", pos: "-1 -3 0", rot: "-90 180 180", scale: "0.5 0.5 0.5"  },
@@ -44,28 +109,20 @@
       const assetContainer = document.getElementById("assetContainer");
       const markerContainer = document.getElementById("markerContainer");
 
-      
-      // AUTO-SIZING BACKGROUND 
+      // AUTO-SIZING LABEL BG
       function updateBackgroundWidth(textEl, bgEl) {
         const value = textEl.getAttribute("value");
-        const charWidth = 0.18; // adjust this if needed
+        const charWidth = 0.18;
         const padding = 0.4;
 
         const textWidth = value.length * charWidth;
         bgEl.setAttribute("width", textWidth + padding);
       }
-      // 1. Generate assets + markers
-    
-      pcParts.forEach(part => {
-        const {
-          id,
-          label,
-          pos = "0 0 0",
-          rot = "-90 0 0",
-          scale = "1 1 1"
-        } = part;
 
-        // Add assets
+      // Generate assets + markers
+      pcParts.forEach(part => {
+        const { id, label, pos, rot, scale } = part;
+
         assetContainer.insertAdjacentHTML(
           "beforeend",
           `
@@ -74,12 +131,10 @@
           `
         );
 
-        // Add marker
         markerContainer.insertAdjacentHTML(
           "beforeend",
           `
             <a-marker type="pattern" url="markers/${id}.patt" id="marker-${id}">
-              
               <a-entity 
                 gltf-model="#model-${id}"
                 position="${pos}"
@@ -87,7 +142,6 @@
                 scale="${scale}">
               </a-entity>
 
-              <!-- Label + background -->
               <a-entity id="label-${id}" position="0 0 2" rotation="-90 0 0">
 
                 <a-plane 
@@ -96,7 +150,7 @@
                   opacity="0.7"
                   height="0.5"
                   width="4"
-                  position="0 0 0.01"
+                  position="0 0 0.01">
                 </a-plane>
 
                 <a-text 
@@ -111,14 +165,12 @@
               </a-entity>
 
               <a-sound id="sound-${id}" src="#audio-${id}" autoplay="false" volume="2"></a-sound>
-
             </a-marker>
           `
         );
       });
 
-  
-      // 2. Sound + background resizing triggers
+      // Sound + auto resize label
       pcParts.forEach((part) => {
         const marker = document.getElementById(`marker-${part.id}`);
 
@@ -127,20 +179,13 @@
           const textEl = document.getElementById(`text-${part.id}`);
           const bgEl = document.getElementById(`bg-${part.id}`);
 
-          // play sound
-          if (sound.components.sound) {
-            sound.components.sound.playSound();
-          }
-
-          // auto resize label background
+          if (sound.components.sound) sound.components.sound.playSound();
           updateBackgroundWidth(textEl, bgEl);
         });
 
         marker.addEventListener("markerLost", () => {
           const sound = document.getElementById(`sound-${part.id}`);
-          if (sound.components.sound) {
-            sound.components.sound.stopSound();
-          }
+          if (sound.components.sound) sound.components.sound.stopSound();
         });
       });
 
